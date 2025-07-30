@@ -18,13 +18,13 @@ end
 
 -- A list of simple components that just enclose content.
 local simple_enclosing_tags = {
-  { trig = "rv", tag = "View" },
-  { trig = "rt", tag = "Text" },
-  { trig = "rsv", tag = "ScrollView" },
-  { trig = "rp", tag = "Pressable" },
-  { trig = "rto", tag = "TouchableOpacity" },
-  { trig = "rth", tag = "TouchableHighlight" },
-  { trig = "rsav", tag = "SafeAreaView" },
+  { trig = "_rv", tag = "View" },
+  { trig = "_rt", tag = "Text" },
+  { trig = "_rsv", tag = "ScrollView" },
+  { trig = "_rp", tag = "Pressable" },
+  { trig = "_rto", tag = "TouchableOpacity" },
+  { trig = "_rth", tag = "TouchableHighlight" },
+  { trig = "_rsav", tag = "SafeAreaView" },
 }
 
 -- Generate the simple snippets programmatically.
@@ -36,7 +36,7 @@ end
 -- A list of more complex snippets with unique properties and structures.
 local complex_snippets = {
   -- ri -> <Image source={...} />
-  s("ri", {
+  s("_ri", {
     t('<Image source={{ uri: "'),
     i(1, "https://placehold.co/100"),
     t('" }} />'),
@@ -44,7 +44,7 @@ local complex_snippets = {
   }),
 
   -- rfl -> <FlatList />
-  s("rfl", {
+  s("_rfl", {
     t({ "<FlatList" }),
     t({ "  data={" .. i(1, "DATA") .. "}" }),
     t({ "  renderItem={({ item }) => (" }),
@@ -58,7 +58,7 @@ local complex_snippets = {
   }),
 
   -- rsl -> <SectionList />
-  s("rsl", {
+  s("_rsl", {
     t({ "<SectionList" }),
     t({ "  sections={" .. i(1, "SECTIONS") .. "}" }),
     t({ "  renderItem={({ item }) => (" }),
@@ -75,7 +75,7 @@ local complex_snippets = {
   }),
 
   -- rti -> <TextInput />
-  s("rti", {
+  s("_rti", {
     t("<TextInput"),
     t({ "  style={" .. i(1, "styles.input") .. "}" }),
     t({ "  onChangeText={" .. i(2, "setText") .. "}" }),
@@ -86,7 +86,7 @@ local complex_snippets = {
   }),
 
   -- rb -> <Button />
-  s("rb", {
+  s("_rb", {
     t('<Button title="'),
     i(1, "Press Me"),
     t('" onPress={() => {}} />'),
@@ -94,7 +94,7 @@ local complex_snippets = {
   }),
 
   -- rsw -> <Switch />
-  s("rsw", {
+  s("_rsw", {
     t("<Switch"),
     t({ '  trackColor={{ false: "#767577", true: "#81b0ff" }}' }),
     t({ "  thumbColor={" .. i(1, "isEnabled") .. ' ? "#f5dd4b" : "#f4f3f4"}' }),
@@ -105,7 +105,7 @@ local complex_snippets = {
   }),
 
   -- rm -> <Modal></Modal>
-  s("rm", {
+  s("_rm", {
     t({ '<Modal animationType="slide" transparent={true} visible={' .. i(1, "modalVisible") .. "}>", "" }),
     t({ "\t<View>", "" }),
     t({ "\t\t", "" }),
@@ -115,7 +115,7 @@ local complex_snippets = {
   }),
 
   -- rsb -> <StatusBar />
-  s("rsb", {
+  s("_rsb", {
     t('<StatusBar barStyle="'),
     i(1, "dark-content"),
     t('" />'),
@@ -123,7 +123,7 @@ local complex_snippets = {
   }),
 
   -- rai -> <ActivityIndicator />
-  s("rai", {
+  s("_rai", {
     t('<ActivityIndicator size="'),
     i(1, "large"),
     t('" color="'),
@@ -133,7 +133,7 @@ local complex_snippets = {
   }),
 
   -- rkav -> <KeyboardAvoidingView></KeyboardAvoidingView>
-  s("rkav", {
+  s("_rkav", {
     t('<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>'),
     i(0),
     t("</KeyboardAvoidingView>"),
