@@ -1,9 +1,10 @@
 -- ============================================================================
 -- Fast Tag Snippets for React Native
 --
--- This file provides two types of snippets for common components:
--- 1. Single Tag (e.g., _v -> View)
+-- This file provides three types of snippets for common components:
+-- 1. Single Tag Name (e.g., _v -> View)
 -- 2. Enclosing Tag (e.g., _rv -> <View></View>)
+-- 3. Self-Closing Tag (e.g., _ri -> <Image />)
 -- ============================================================================
 
 local ls = require("luasnip")
@@ -27,17 +28,11 @@ end
 -- ============================================================================
 
 --- Creates a snippet for just the component name, e.g., View.
---- @param trigger string The snippet trigger (e.g., "_v").
---- @param tag_name string The name of the component (e.g., "View").
 local function create_single_tag_snippet(trigger, tag_name)
-  return s(trigger, {
-    t(tag_name),
-  })
+  return s(trigger, { t(tag_name) })
 end
 
 --- Creates a snippet for an enclosing tag, e.g., <View></View>.
---- @param trigger string The snippet trigger (e.g., "_rv").
---- @param tag_name string The name of the component (e.g., "View").
 local function create_enclosing_snippet(trigger, tag_name)
   return s(trigger, {
     t("<" .. tag_name .. ">"),
@@ -46,38 +41,64 @@ local function create_enclosing_snippet(trigger, tag_name)
   })
 end
 
+--- Creates a snippet for a self-closing tag, e.g., <Image />.
+local function create_self_closing_snippet(trigger, tag_name)
+  return s(trigger, {
+    t("<" .. tag_name .. " />"),
+    i(0), -- Cursor position after the tag
+  })
+end
+
 -- ============================================================================
 -- Tag Definitions
 -- ============================================================================
 
--- Define all the component tags you want here.
--- The script will automatically create both single and enclosing snippets.
+-- Define all component tags here.
+-- type: 'enclosing' for tags like <View>...</View>
+-- type: 'self-closing' for tags like <Image />
 local component_tags = {
-  { single_trig = "_v", enclosing_trig = "_rv", tag = "View" },
-  { single_trig = "_t", enclosing_trig = "_rt", tag = "Text" },
-  { single_trig = "_sv", enclosing_trig = "_rsv", tag = "ScrollView" },
-  { single_trig = "_p", enclosing_trig = "_rp", tag = "Pressable" },
-  { single_trig = "_to", enclosing_trig = "_rto", tag = "TouchableOpacity" },
-  { single_trig = "_th", enclosing_trig = "_rth", tag = "TouchableHighlight" },
-  { single_trig = "_sav", enclosing_trig = "_rsav", tag = "SafeAreaView" },
-  { single_trig = "_i", enclosing_trig = "_ri", tag = "Image" },
-  { single_trig = "_fl", enclosing_trig = "_rfl", tag = "FlatList" },
-  { single_trig = "_sl", enclosing_trig = "_rsl", tag = "SectionList" },
-  { single_trig = "_ti", enclosing_trig = "_rti", tag = "TextInput" },
+  -- Enclosing Tags
+  { base_trig = "v", tag = "View", type = "enclosing" },
+  { base_trig = "t", tag = "Text", type = "enclosing" },
+  { base_trig = "sv", tag = "ScrollView", type = "enclosing" },
+  { base_trig = "p", tag = "Pressable", type = "enclosing" },
+  { base_trig = "to", tag = "TouchableOpacity", type = "enclosing" },
+  { base_trig = "th", tag = "TouchableHighlight", type = "enclosing" },
+  { base_trig = "sav", tag = "SafeAreaView", type = "enclosing" },
+  { base_trig = "fl", tag = "FlatList", type = "enclosing" },
+  { base_trig = "sl", tag = "SectionList", type = "enclosing" },
+  { base_trig = "m", tag = "Modal", type = "enclosing" },
+  { base_trig = "kav", tag = "KeyboardAvoidingView", type = "enclosing" },
+
+  -- Self-Closing Tags
+  { base_trig = "i", tag = "Image", type = "self-closing" },
+  { base_trig = "ti", tag = "TextInput", type = "self-closing" },
+  { base_trig = "b", tag = "Button", type = "self-closing" },
+  { base_trig = "sb", tag = "StatusBar", type = "self-closing" },
+  { base_trig = "ai", tag = "ActivityIndicator", type = "self-closing" },
 }
 
 -- ============================================================================
 -- Snippet Generation and Final Assembly
 -- ============================================================================
 
-local single_tag_snippets = {}
-local enclosing_tag_snippets = {}
+local all_snippets = {}
 
 -- Programmatically create all the snippets based on the definitions above.
 for _, tag_info in ipairs(component_tags) do
-  table.insert(single_tag_snippets, create_single_tag_snippet(tag_info.single_trig, tag_info.tag))
-  table.insert(enclosing_tag_snippets, create_enclosing_snippet(tag_info.enclosing_trig, tag_info.tag))
+  local single_trigger = "_" .. tag_info.base_trig
+  local rich_trigger = "_r" .. tag_info.base_trig
+
+  -- 1. Create the single tag snippet (e.g., _v -> View)
+  table.insert(all_snippets, create_single_tag_snippet(single_trigger, tag_info.tag))
+
+  -- 2. Create the rich snippet based on type
+  if tag_info.type == "enclosing" then
+    table.insert(all_snippets, create_enclosing_snippet(rich_trigger, tag_info.tag))
+  elseif tag_info.type == "self-closing" then
+    table.insert(all_snippets, create_self_closing_snippet(rich_trigger, tag_info.tag))
+  end
 end
 
--- Return the final merged list of all generated snippets.
-return merge_lists(single_tag_snippets, enclosing_tag_snippets)
+-- Return the final list of all generated snippets.
+return all_snippets
