@@ -2,16 +2,18 @@ local ls = require("luasnip")
 local s = ls.snippet
 local t = ls.text_node
 local i = ls.insert_node
-local util = require("vim-react-snippets.util") -- Assuming util is available for merge_lists
+-- Assuming util.merge_lists is available from your config, with a fallback.
+local util = require("vim-react-snippets.util")
 
---- Creates a snippet for a simple enclosing tag, e.g., <View></View>.
---- @param trigger string The snippet trigger, e.g., "rv".
---- @param tag_name string The name of the HTML/JSX tag, e.g., "View".
---- @return Snippet
+---
+-- Creates a snippet for a simple enclosing tag, e.g., <View></View>.
+-- @param trigger string The snippet trigger.
+-- @param tag_name string The name of the JSX tag.
+-- @return Snippet
 local function create_enclosing_snippet(trigger, tag_name)
   return s(trigger, {
     t("<" .. tag_name .. ">"),
-    i(0),
+    i(0), -- Cursor position inside the tag
     t("</" .. tag_name .. ">"),
   })
 end
@@ -35,7 +37,7 @@ end
 
 -- A list of more complex snippets with unique properties and structures.
 local complex_snippets = {
-  -- ri -> <Image source={...} />
+  -- _ri -> <Image source={...} />
   s("_ri", {
     t('<Image source={{ uri: "'),
     i(1, "https://placehold.co/100"),
@@ -43,49 +45,81 @@ local complex_snippets = {
     i(0),
   }),
 
-  -- rfl -> <FlatList />
+  -- _rfl -> <FlatList />
   s("_rfl", {
-    t({ "<FlatList" }),
-    t({ "  data={" .. i(1, "DATA") .. "}" }),
-    t({ "  renderItem={({ item }) => (" }),
-    t({ "    <View>" }),
-    t({ "      <Text>{item.title}</Text>" }),
-    t({ "    </View>" }),
-    t({ "  )}" }),
-    t({ "  keyExtractor={item => item.id}" }),
-    t({ "/>" }),
+    t({
+      "<FlatList",
+      "  data={",
+    }),
+    i(1, "DATA"),
+    t({
+      "}",
+      "  renderItem={({ item }) => (",
+      "    <View>",
+      "      ",
+    }),
+    i(2, "<Text>{item.title}</Text>"),
+    t({
+      "",
+      "    </View>",
+      "  )}",
+      "  keyExtractor={item => item.",
+    }),
+    i(3, "id"),
+    t({
+      "}",
+      "/>",
+    }),
     i(0),
   }),
 
-  -- rsl -> <SectionList />
+  -- _rsl -> <SectionList />
   s("_rsl", {
-    t({ "<SectionList" }),
-    t({ "  sections={" .. i(1, "SECTIONS") .. "}" }),
-    t({ "  renderItem={({ item }) => (" }),
-    t({ "    <View>" }),
-    t({ "      <Text>{item}</Text>" }),
-    t({ "    </View>" }),
-    t({ "  )}" }),
-    t({ "  renderSectionHeader={({ section: { title } }) => (" }),
-    t({ "    <Text>{title}</Text>" }),
-    t({ "  )}" }),
-    t({ "  keyExtractor={(item, index) => item + index}" }),
-    t({ "/>" }),
+    t({
+      "<SectionList",
+      "  sections={",
+    }),
+    i(1, "SECTIONS"),
+    t({
+      "}",
+      "  renderItem={({ item, index }) => (",
+      "    <View key={index}>",
+      "      ",
+    }),
+    i(2, "<Text>{item}</Text>"),
+    t({
+      "",
+      "    </View>",
+      "  )}",
+      "  renderSectionHeader={({ section: { title } }) => (",
+      "    <Text>{title}</Text>",
+      "  )}",
+      "  keyExtractor={(item, index) => item + index}",
+      "/>",
+    }),
     i(0),
   }),
 
-  -- rti -> <TextInput />
+  -- _rti -> <TextInput />
   s("_rti", {
     t("<TextInput"),
-    t({ "  style={" .. i(1, "styles.input") .. "}" }),
-    t({ "  onChangeText={" .. i(2, "setText") .. "}" }),
-    t({ "  value={" .. i(3, "text") .. "}" }),
-    t({ '  placeholder="' .. i(4, "Type here...") .. '" ' }),
+    t({ "  style={" }),
+    i(1, "styles.input"),
+    t({ "}" }),
+    t({ "  onChangeText={" }),
+    i(2, "setText"),
+    t({ "}" }),
+    t({ "  value={" }),
+    i(3, "text"),
+    t({ "}" }),
+    t({ '  placeholder="' }),
+    i(4, "Type here..."),
+    t({ '" ' }),
     t("/>"),
     i(0),
   }),
 
-  -- rb -> <Button />
+  -- _rb -> <Button />
   s("_rb", {
     t('<Button title="'),
     i(1, "Press Me"),
@@ -93,28 +127,41 @@ local complex_snippets = {
     i(0),
   }),
 
-  -- rsw -> <Switch />
+  -- _rsw -> <Switch />
   s("_rsw", {
     t("<Switch"),
     t({ '  trackColor={{ false: "#767577", true: "#81b0ff" }}' }),
-    t({ "  thumbColor={" .. i(1, "isEnabled") .. ' ? "#f5dd4b" : "#f4f3f4"}' }),
-    t({ "  onValueChange={" .. i(2, "toggleSwitch") .. "}" }),
-    t({ "  value={" .. i(3, "isEnabled") .. "}" }),
+    t({ "  thumbColor={" }),
+    i(1, "isEnabled"),
+    t({ ' ? "#f5dd4b" : "#f4f3f4"}' }),
+    t({ "  onValueChange={" }),
+    i(2, "toggleSwitch"),
+    t({ "}" }),
+    t({ "  value={" }),
+    i(3, "isEnabled"),
+    t({ "}" }),
     t("/>"),
     i(0),
   }),
 
-  -- rm -> <Modal></Modal>
+  -- _rm -> <Modal></Modal>
   s("_rm", {
-    t({ '<Modal animationType="slide" transparent={true} visible={' .. i(1, "modalVisible") .. "}>", "" }),
-    t({ "\t<View>", "" }),
-    t({ "\t\t", "" }),
+    t('<Modal animationType="slide" transparent={true} visible={'),
+    i(1, "modalVisible"),
+    t({
+      "}>",
+      "  <View>",
+      "    ",
+    }),
     i(0),
-    t({ "", "\t</View>" }),
-    t({ "", "</Modal>" }),
+    t({
+      "",
+      "  </View>",
+      "</Modal>",
+    }),
   }),
 
-  -- rsb -> <StatusBar />
+  -- _rsb -> <StatusBar />
   s("_rsb", {
     t('<StatusBar barStyle="'),
     i(1, "dark-content"),
@@ -122,7 +169,7 @@ local complex_snippets = {
     i(0),
   }),
 
-  -- rai -> <ActivityIndicator />
+  -- _rai -> <ActivityIndicator />
   s("_rai", {
     t('<ActivityIndicator size="'),
     i(1, "large"),
@@ -132,7 +179,7 @@ local complex_snippets = {
     i(0),
   }),
 
-  -- rkav -> <KeyboardAvoidingView></KeyboardAvoidingView>
+  -- _rkav -> <KeyboardAvoidingView></KeyboardAvoidingView>
   s("_rkav", {
     t('<KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>'),
     i(0),
